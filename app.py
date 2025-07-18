@@ -1,40 +1,24 @@
+import streamlit as st
 
-from flask import Flask, render_template, request
+# Title
+st.title("Velor Risk Calculator")
 
-app = Flask(__name__)
+# Inputs
+balance = st.number_input("Account Balance ($)", min_value=0.0, step=100.0)
+risk_percent = st.number_input("Risk per Trade (%)", min_value=0.0, step=0.1)
+stop_loss_pips = st.number_input("Stop Loss (Pips)", min_value=0.1, step=0.1)
+pip_value = st.number_input("Custom Pip Value ($)", min_value=0.01, value=10.0)
 
-# Currency pip values (custom pip values for major instruments)
-pip_values = {
-    'EURUSD': 10, 'USDJPY': 9.13, 'GBPUSD': 10, 'XAUUSD': 1,
-    'US30': 1, 'NAS100': 1, 'SPX500': 1
-}
+# Calculate risk
+if balance > 0 and stop_loss_pips > 0:
+    risk_amount = (risk_percent / 100) * balance
+    lot_size = risk_amount / (stop_loss_pips * pip_value)
+    potential_loss = lot_size * stop_loss_pips * pip_value
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    result = {}
-    warning = ""
-    if request.method == 'POST':
-        account_balance = float(request.form['account_balance'])
-        risk_percent = float(request.form['risk_percent'])
-        pair = request.form['pair']
-        stop_loss_pips = float(request.form['stop_loss_pips'])
+    st.markdown("### Results")
+    st.write(f"Risk Amount: ${risk_amount:.2f}")
+    st.write(f"Lot Size: {lot_size:.2f}")
+    st.write(f"Potential Loss: ${potential_loss:.2f}")
 
-        risk_amount = (risk_percent / 100) * account_balance
-
-        pip_value = pip_values.get(pair.upper(), 10)
-        lot_size = risk_amount / (stop_loss_pips * pip_value)
-        potential_loss = stop_loss_pips * pip_value * lot_size
-
-        if risk_percent > 5:
-            warning = "⚠️ Warning: Risking more than 5% of your account!"
-
-        result = {
-            'risk_amount': round(risk_amount, 2),
-            'lot_size': round(lot_size, 2),
-            'potential_loss': round(potential_loss, 2)
-        }
-
-    return render_template('index.html', result=result, warning=warning)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    if risk_percent > 5:
+        st.error("⚠️ Warning: Risking more than 5% of your account is very risky!")
