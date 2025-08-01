@@ -1,43 +1,45 @@
-import streamlit as st
+from flask import Flask, render_template, request
 
-# App Title
-st.set_page_config(page_title="Velor Risk Calculator", layout="centered")
-st.title("💰 Velor Risk Calculator")
+app = Flask(__name__)
 
-# Currency pairs
-major_pairs = ["EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD"]
-minor_pairs = ["EURGBP", "EURJPY", "GBPJPY", "CHFJPY", "AUDCAD", "NZDJPY"]
-indices = ["XAUUSD", "US30", "NAS100", "SPX500"]
+@app.route("/", methods=["GET", "POST"])
+def index():
+    result = None
+    warning = None
 
-st.subheader("1️⃣ Select Pair Type")
-pair_type = st.radio("Choose type:", ["Major", "Minor", "Other"])
+    if request.method == "POST":
+        try:
+            account_balance = float(request.form["account_balance"])
+            risk_percent = float(request.form["risk_percent"])
+            stop_loss_pips = float(request.form["stop_loss_pips"])
+            pair = request.form["pair"]
 
-# Conditional pair options
-if pair_type == "Major":
-    pair = st.selectbox("Select Major Pair", major_pairs)
-elif pair_type == "Minor":
-    pair = st.selectbox("Select Minor Pair", minor_pairs)
-else:
-    pair = st.selectbox("Select Other", indices)
+            risk_amount = (risk_percent / 100.0) * account_balance
 
-# Inputs
-st.subheader("2️⃣ Trade Settings")
-balance = st.number_input("Account Balance ($)", min_value=0.0, step=100.0)
-risk_percent = st.number_input("Risk per Trade (%)", min_value=0.0, step=0.1)
-stop_loss = st.number_input("Stop Loss (pips)", min_value=0.1, step=0.1)
-pip_value = st.number_input("Custom Pip Value ($)", min_value=0.01, value=10.0)
+            # Default pip value per lot (approximate, varies by pair)
+            pip_value = 10
+            if pair == "XAUUSD":
+                pip_value = 1  # Gold
+            elif pair in ["US30", "NAS100", "SPX500"]:
+                pip_value = 1  # Indices
 
-# Risk calculation
-if balance > 0 and stop_loss > 0:
-    risk_amount = (risk_percent / 100) * balance
-    lot_size = risk_amount / (stop_loss * pip_value)
-    potential_loss = lot_size * stop_loss * pip_value
+            lot_size = round(risk_amount / (stop_loss_pips * pip_value), 2)
+            potential_loss = round(lot_size * stop_loss_pips * pip_value, 2)
 
-    st.subheader("📊 Results")
-    st.write(f"**Pair:** {pair}")
-    st.write(f"Risk Amount: **${risk_amount:.2f}**")
-    st.write(f"Lot Size: **{lot_size:.2f} lots**")
-    st.write(f"Potential Loss: **${potential_loss:.2f}**")
+            result = {
+                "risk_amount": round(risk_amount, 2),
+                "lot_size": lot_size,
+                "potential_loss": potential_loss
+            }
 
-    if risk_percent > 5:
-        st.warning("⚠️ Risk exceeds 5% — Consider lowering it for better risk management.")
+            if risk_percent > 5:
+                warning = "⚠️ You are risking more than 5% of your account. This is not recommended."
+
+        except ValueError:
+            warning = "Please enter valid numeric values."
+
+    return render_template("index.html", result=result, warning=warning)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+            
