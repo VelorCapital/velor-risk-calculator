@@ -1,69 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Velor Risk Calculator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #eee;
-      padding: 20px;
-    }
-    input, select, button {
-      padding: 10px;
-      margin: 10px 0;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .warning {
-      color: yellow;
-      margin-top: 10px;
-    }
-  </style>
-  <script>
-    if (!('querySelector' in document && 'addEventListener' in window)) {
-      alert("Your browser is outdated. Please update or switch to Chrome for best experience.");
-    }
-  </script>
+    <title>Velor Risk Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #111; 
+            color: #eee; 
+            padding: 20px;
+        }
+        input, select, button {
+            padding: 10px; 
+            margin: 10px 0; 
+            width: 100%;
+            font-size: 16px;
+        }
+        .warning {
+            color: yellow;
+            margin-top: 10px;
+        }
+        .results {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Velor Risk Calculator</h1>
-  <form method="POST">
-    <label for="account_balance">Account Balance (USD):</label>
-    <input type="text" name="account_balance" id="account_balance" required>
+    <h1>Velor Risk Calculator</h1>
+    <form method="POST">
+        <label>Account Balance (USD):</label>
+        <input type="number" name="account_balance" step="0.01" required>
 
-    <label for="risk_percent">Risk %:</label>
-    <input type="text" name="risk_percent" id="risk_percent" required>
+        <label>Risk %:</label>
+        <input type="number" name="risk_percent" step="0.1" required>
 
-    <label for="pair">Pair:</label>
-    <select name="pair" id="pair" required>
-      <option value="EURUSD">EURUSD</option>
-      <option value="USDJPY">USDJPY</option>
-      <option value="GBPUSD">GBPUSD</option>
-      <option value="XAUUSD">XAUUSD</option>
-      <option value="US30">US30</option>
-      <option value="NAS100">NAS100</option>
-      <option value="SPX500">SPX500</option>
-    </select>
+        <label>Pair:</label>
+        <select name="pair" required>
+            <option value="EURUSD">EURUSD</option>
+            <option value="USDJPY">USDJPY</option>
+            <option value="GBPUSD">GBPUSD</option>
+            <option value="XAUUSD">XAUUSD</option>
+            <option value="US30">US30</option>
+            <option value="NAS100">NAS100</option>
+            <option value="SPX500">SPX500</option>
+        </select>
 
-    <label for="stop_loss_pips">Stop Loss (pips):</label>
-    <input type="text" name="stop_loss_pips" id="stop_loss_pips" required>
+        <label>Stop Loss (pips):</label>
+        <input type="number" name="stop_loss_pips" step="0.1" required>
 
-    <button type="submit">Calculate</button>
-  </form>
+        <button type="submit">Calculate</button>
+    </form>
 
-  {% if warning %}
-    <div class="warning">{{ warning }}</div>
-  {% endif %}
+    {% if warning %}
+        <div class="warning">{{ warning }}</div>
+    {% endif %}
 
-  {% if result %}
-    <h2>Results:</h2>
-    <p>Risk Amount: ${{ result.risk_amount }}</p>
-    <p>Lot Size: {{ result.lot_size }}</p>
-    <p>Potential $ Loss: ${{ result.potential_loss }}</p>
-  {% endif %}
+    {% if result %}
+        <div class="results">
+            <h2>Results:</h2>
+            <p>Risk Amount: ${{ result.risk_amount }}</p>
+            <p>Lot Size: {{ result.lot_size }}</p>
+            <p>Potential $ Loss: ${{ result.potential_loss }}</p>
+        </div>
+    {% endif %}
 </body>
-          </html>
-          
+  </html>
+              
